@@ -1,0 +1,471 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>투자자문 워크벤치</title>
+<meta name="description" content="알스퀘어 투자자문 신입을 위한 업무 워크벤치 — 모닝 브리프, 딜 뉴스 취합, 언더라이팅 툴킷, 렌트롤 분석, 딜 프로세스, 용어·시험 연결.">
+<meta name="theme-color" content="#0E2348">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Space+Grotesk:wght@500;700&display=swap">
+<link rel="stylesheet" href="assets/css/app.css">
+</head>
+<body>
+
+<a class="skip" href="#main">본문으로 건너뛰기</a>
+
+<!-- ───────── Sidebar ───────── -->
+<aside class="side" aria-label="워크벤치 내비게이션">
+  <div class="side__brand">
+    <span class="mark" aria-hidden="true">R<i>2</i></span>
+    <div>
+      <strong>투자자문 워크벤치</strong>
+      <span>Capital Markets · Advisory</span>
+    </div>
+  </div>
+
+  <nav class="side__nav" id="nav">
+    <a href="#brief"   data-n="01">모닝 브리프</a>
+    <a href="#news"    data-n="02">딜 뉴스룸</a>
+    <a href="#under"   data-n="03">언더라이팅</a>
+    <a href="#rentroll" data-n="04">렌트롤 분석</a>
+    <a href="#process" data-n="05">딜 프로세스</a>
+    <a href="#roadmap" data-n="06">90일 로드맵</a>
+    <a href="#gloss"   data-n="07">용어 · 시험 연결</a>
+    <a href="#res"     data-n="08">리소스</a>
+  </nav>
+
+  <div class="side__foot">
+    <div class="clock">
+      <span class="clock__t num" id="clock">--:--:--</span>
+      <span class="clock__z">KST</span>
+    </div>
+    <div class="clock__d" id="clockDate">—</div>
+    <ul class="status">
+      <li><i class="dot" id="stNews"></i>뉴스 피드</li>
+      <li><i class="dot" id="stMacro"></i>ECOS 금리</li>
+      <li><i class="dot" id="stKrx"></i><span id="krxLabel">KRX</span></li>
+    </ul>
+    <button class="theme" id="themeBtn" type="button" aria-label="화면 테마 전환">
+      <span>테마</span><b id="themeLabel">자동</b>
+    </button>
+  </div>
+</aside>
+
+<main id="main">
+
+<!-- ───────── 01 BRIEF ───────── -->
+<section id="brief" class="sec sec--brief">
+  <header class="sec__head">
+    <p class="eyebrow"><span>01</span>Morning Brief</p>
+    <h1 class="display" id="briefTitle">오늘의 시장, 오늘의 숫자.</h1>
+    <p class="lede">출근 후 20분. 금리를 보고, 딜 시그널을 고르고, 오늘 할 일을 정한다. 이 순서가 몸에 붙으면 회의에서 먼저 말할 수 있다.</p>
+  </header>
+
+  <div class="ticker" id="ticker" aria-label="최신 딜 헤드라인" hidden>
+    <span class="ticker__lab">LIVE</span>
+    <div class="ticker__track"><div class="ticker__row" id="tickerRow"></div></div>
+  </div>
+
+  <div class="brief">
+    <div class="brief__main">
+      <div class="blockhead">
+        <h2>금리 · 환율</h2>
+        <span class="meta" id="macroMeta">—</span>
+      </div>
+      <div class="tiles" id="macroTiles"></div>
+
+      <div class="spread reveal">
+        <div class="spread__l">
+          <p class="eyebrow eyebrow--plain">Risk Premium</p>
+          <h3>캡레이트 스프레드</h3>
+          <p class="note">우리 팀이 쓰는 A급 오피스 캡레이트를 넣으면 국고채 10년물 대비 스프레드를 계산한다. 스프레드가 좁을수록 부동산은 채권 대비 비싸다.</p>
+          <div class="fieldrow">
+            <label class="field">
+              <span>A급 오피스 캡레이트 (%)</span>
+              <input type="number" step="0.01" id="spCap" inputmode="decimal" placeholder="예: 4.60">
+            </label>
+            <label class="field">
+              <span>국고채 10년 (%)</span>
+              <input type="number" step="0.001" id="spKtb" inputmode="decimal" placeholder="ECOS 연결 시 자동">
+            </label>
+          </div>
+        </div>
+        <div class="spread__r">
+          <div class="bigrow"><span class="bignum num" id="spOut">—</span><span class="bignum__u">%p</span></div>
+          <p class="meta" id="spBp">캡레이트를 입력하면 계산된다.</p>
+          <div class="gauge" aria-hidden="true"><i id="spBar"></i></div>
+          <p class="gauge__cap"><span>0</span><span>100bp</span><span>200bp</span><span>300bp</span></p>
+          <p class="exam"><b>시험 연결</b> 요구수익률 = 무위험률 + 위험할증률 — 중개사 학개론 · 감평 경제학원론</p>
+        </div>
+      </div>
+
+      <div class="blockhead">
+        <h2>오늘의 딜 시그널</h2>
+        <a class="link" href="#news">뉴스룸 전체 보기 →</a>
+      </div>
+      <ol class="signals" id="briefSignals"><li class="empty">피드를 불러오는 중…</li></ol>
+    </div>
+
+    <aside class="brief__side">
+      <div class="coach reveal">
+        <p class="eyebrow eyebrow--plain">사수 한마디 <span class="num" id="tipIdx"></span></p>
+        <blockquote id="tipHead">—</blockquote>
+        <p id="tipBody"></p>
+        <button class="btn btn--ghost" id="tipNext" type="button">다음 조언</button>
+      </div>
+
+      <div class="routine reveal">
+        <div class="blockhead blockhead--tight">
+          <h3>오늘의 루틴</h3>
+          <span class="meta num" id="routineCount">0/6</span>
+        </div>
+        <ul class="checks" id="routine"></ul>
+        <p class="note">체크 상태는 이 브라우저에만 저장되며 매일 초기화된다.</p>
+      </div>
+    </aside>
+  </div>
+</section>
+
+<!-- ───────── 02 NEWS ───────── -->
+<section id="news" class="sec">
+  <header class="sec__head">
+    <p class="eyebrow"><span>02</span>Deal Newsroom</p>
+    <h2 class="display">기사가 아니라, 거래를 읽는다.</h2>
+    <p class="lede">상업용 부동산 뉴스를 7일 단위로 모으고, 우협·입찰·매각 같은 딜 시그널을 자동으로 표시한다. 중요한 건 클립해서 세 줄 요약으로 남긴다.</p>
+  </header>
+
+  <div class="newsbar">
+    <div class="tabs" id="newsTabs" role="tablist" aria-label="뉴스 카테고리"></div>
+    <div class="newsbar__r">
+      <label class="search">
+        <span class="sr">뉴스 검색</span>
+        <input type="search" id="newsQ" placeholder="키워드 · 언론사">
+      </label>
+      <button class="chip" id="newsSort" type="button" aria-pressed="false">시그널 우선</button>
+    </div>
+  </div>
+
+  <div class="newsgrid">
+    <div>
+      <p class="meta" id="newsMeta">—</p>
+      <ul class="newslist" id="newsList"></ul>
+      <div class="fallback" id="newsFallback" hidden>
+        <p class="fallback__t">실시간 피드에 연결되지 않았다.</p>
+        <p class="note">Vercel 배포 환경의 <code>/api/news</code> 서버 함수가 피드를 가져온다. 로컬 파일로 열었거나 네트워크가 막힌 경우, 아래 검색 바로가기로 같은 쿼리를 바로 확인할 수 있다.</p>
+        <div class="fallback__links" id="newsLinks"></div>
+      </div>
+    </div>
+
+    <aside class="clip">
+      <div class="blockhead blockhead--tight">
+        <h3>클립 메모</h3>
+        <span class="meta num" id="clipCount">0</span>
+      </div>
+      <p class="note">“누가 팔고 · 누가 사고 · 평당 얼마” 세 줄로 적는다.</p>
+      <ul class="cliplist" id="clipList"></ul>
+      <div class="clip__actions">
+        <button class="btn" id="clipCopy" type="button">팀 공유용 복사</button>
+        <button class="btn btn--ghost" id="clipClear" type="button">비우기</button>
+      </div>
+    </aside>
+  </div>
+</section>
+
+<!-- ───────── 03 UNDERWRITING ───────── -->
+<section id="under" class="sec">
+  <header class="sec__head">
+    <p class="eyebrow"><span>03</span>Underwriting Toolkit</p>
+    <h2 class="display">가격은 가정의 결과다.</h2>
+    <p class="lede">레버리지 수익률, 직접환원, 실질임대료, 면적 환산. 숫자를 바꾸는 즉시 결과와 민감도가 따라 움직인다. 기본값은 모두 예시다.</p>
+  </header>
+
+  <div class="tabs tabs--line" id="uwTabs" role="tablist" aria-label="언더라이팅 도구">
+    <button role="tab" data-tab="lev" aria-selected="true">레버리지 IRR</button>
+    <button role="tab" data-tab="cap">직접환원 · 역산</button>
+    <button role="tab" data-tab="noc">NOC · 환산보증금</button>
+    <button role="tab" data-tab="area">면적 · 단가 환산</button>
+  </div>
+
+  <!-- 레버리지 -->
+  <div class="uw" data-panel="lev">
+    <form class="uw__in" id="levForm" autocomplete="off">
+      <fieldset>
+        <legend>자산</legend>
+        <label class="field"><span>매입가 (억원)</span><input type="number" name="price" value="3000" step="10"></label>
+        <label class="field"><span>1년차 NOI (억원)</span><input type="number" name="noi" value="138" step="1"></label>
+        <label class="field"><span>취득 부대비용 (%)</span><input type="number" name="cost" value="5.6" step="0.1"></label>
+        <p class="hint">취득세 등 4.6% + 실사·중개·법률 1.0% 가정</p>
+      </fieldset>
+      <fieldset>
+        <legend>대출</legend>
+        <label class="field field--range"><span>LTV <b class="num" data-o="ltv"></b></span><input type="range" name="ltv" min="0" max="75" step="1" value="55"></label>
+        <label class="field field--range"><span>대출 금리 <b class="num" data-o="rate"></b></span><input type="range" name="rate" min="2" max="8" step="0.05" value="4.3"></label>
+      </fieldset>
+      <fieldset>
+        <legend>보유 · 출구</legend>
+        <label class="field field--range"><span>NOI 상승률 <b class="num" data-o="g"></b></span><input type="range" name="g" min="0" max="5" step="0.1" value="2.0"></label>
+        <label class="field field--range"><span>보유 기간 <b class="num" data-o="n"></b></span><input type="range" name="n" min="3" max="10" step="1" value="5"></label>
+        <label class="field field--range"><span>출구 캡레이트 <b class="num" data-o="exit"></b></span><input type="range" name="exit" min="3" max="7" step="0.05" value="4.75"></label>
+        <label class="field"><span>매각 비용 (%)</span><input type="number" name="sell" value="1.0" step="0.1"></label>
+      </fieldset>
+    </form>
+
+    <div class="uw__out">
+      <div class="kpis">
+        <div class="kpi kpi--lead"><span>레버리지 IRR</span><b class="num" id="oIrr">—</b></div>
+        <div class="kpi"><span>무레버리지 IRR</span><b class="num" id="oUirr">—</b></div>
+        <div class="kpi"><span>지분 배수</span><b class="num" id="oEm">—</b></div>
+        <div class="kpi"><span>1년차 CoC</span><b class="num" id="oCoc">—</b></div>
+        <div class="kpi"><span>진입 캡레이트</span><b class="num" id="oCap">—</b></div>
+        <div class="kpi"><span>DSCR <small>(이자만)</small></span><b class="num" id="oDscr">—</b></div>
+      </div>
+
+      <div class="leverbox">
+        <p class="meta" id="oLever">—</p>
+      </div>
+
+      <div class="chartblock">
+        <div class="blockhead blockhead--tight"><h4>연도별 지분 현금흐름 (억원)</h4><span class="meta">t0 = 지분 투입</span></div>
+        <div id="cfChart" class="chart"></div>
+      </div>
+
+      <div class="chartblock">
+        <div class="blockhead blockhead--tight"><h4>민감도 — 레버리지 IRR</h4><span class="meta">행: 출구 캡레이트 · 열: NOI 상승률</span></div>
+        <div class="heat" id="heat"></div>
+      </div>
+
+      <p class="exam"><b>시험 연결</b> 지분배당률·부채감당률·대부비율·정(+)의 레버리지 — 중개사 학개론 투자분석. 기간 말 복귀가액 = 감평 실무 DCF.</p>
+      <p class="fine">이자만 내는 만기일시상환, 법인세·감가상각·CapEx 미반영의 단순 세전 모델. 실제 딜 판단 근거로 쓰지 않는다.</p>
+    </div>
+  </div>
+
+  <!-- 직접환원 -->
+  <div class="uw" data-panel="cap" hidden>
+    <form class="uw__in" id="capForm" autocomplete="off">
+      <fieldset>
+        <legend>NOI → 가치</legend>
+        <label class="field"><span>연 NOI (억원)</span><input type="number" name="noi" value="135" step="1"></label>
+        <label class="field"><span>환원율 (%)</span><input type="number" name="cap" value="4.5" step="0.05"></label>
+        <label class="field"><span>연면적 (평)</span><input type="number" name="gfa" value="30000" step="100"></label>
+      </fieldset>
+      <fieldset>
+        <legend>가격 → 내재 캡레이트</legend>
+        <label class="field"><span>제시 가격 (억원)</span><input type="number" name="ask" value="3200" step="10"></label>
+        <label class="field"><span>국고채 10년 (%)</span><input type="number" name="ktb" step="0.001" placeholder="입력"></label>
+      </fieldset>
+    </form>
+    <div class="uw__out">
+      <div class="kpis">
+        <div class="kpi kpi--lead"><span>수익가액</span><b class="num" id="cVal">—</b></div>
+        <div class="kpi"><span>연면적 평당가</span><b class="num" id="cPp">—</b></div>
+        <div class="kpi"><span>제시가 내재 캡</span><b class="num" id="cImp">—</b></div>
+        <div class="kpi"><span>제시가 vs 수익가액</span><b class="num" id="cGap">—</b></div>
+        <div class="kpi"><span>스프레드</span><b class="num" id="cSp">—</b></div>
+        <div class="kpi"><span>10bp 변동 시 가치</span><b class="num" id="cBp">—</b></div>
+      </div>
+      <div class="chartblock">
+        <div class="blockhead blockhead--tight"><h4>캡레이트별 가치 곡선</h4><span class="meta">NOI 고정</span></div>
+        <div id="capChart" class="chart"></div>
+      </div>
+      <p class="exam"><b>시험 연결</b> 수익환원법(직접환원법): 수익가액 = 순수익 ÷ 환원율 — 감정평가에 관한 규칙 제2조 제10호. 캡레이트가 낮을수록 가치는 비선형으로 커진다(볼록성).</p>
+    </div>
+  </div>
+
+  <!-- NOC -->
+  <div class="uw" data-panel="noc" hidden>
+    <form class="uw__in" id="nocForm" autocomplete="off">
+      <fieldset>
+        <legend>임대 조건</legend>
+        <label class="field"><span>임대면적 (평)</span><input type="number" name="area" value="500" step="10"></label>
+        <label class="field"><span>전용률 (%)</span><input type="number" name="eff" value="52" step="0.5"></label>
+        <label class="field"><span>평당 월 임대료 (원, 임대면적)</span><input type="number" name="rent" value="125000" step="1000"></label>
+        <label class="field"><span>평당 월 관리비 (원)</span><input type="number" name="cam" value="52000" step="1000"></label>
+        <label class="field"><span>계약기간 (개월)</span><input type="number" name="term" value="60" step="1"></label>
+        <label class="field"><span>렌트프리 (개월)</span><input type="number" name="rf" value="6" step="1"></label>
+      </fieldset>
+      <fieldset>
+        <legend>상가건물임대차보호법 — 환산보증금</legend>
+        <label class="field"><span>보증금 (만원)</span><input type="number" name="dep" value="50000" step="1000"></label>
+        <label class="field"><span>월차임 (만원)</span><input type="number" name="mr" value="450" step="10"></label>
+        <label class="field"><span>지역</span>
+          <select name="reg">
+            <option value="90000">서울특별시 — 9억원</option>
+            <option value="69000">과밀억제권역(서울 제외)·부산 — 6억 9천만원</option>
+            <option value="54000">광역시(과밀·군 제외)·세종·파주·화성·안산·용인·김포·광주(경기) — 5억 4천만원</option>
+            <option value="37000">그 밖의 지역 — 3억 7천만원</option>
+          </select>
+        </label>
+      </fieldset>
+    </form>
+    <div class="uw__out">
+      <div class="kpis">
+        <div class="kpi kpi--lead"><span>NOC (전용평당 / 월)</span><b class="num" id="nNoc">—</b></div>
+        <div class="kpi"><span>실질 임대료 (임대평당)</span><b class="num" id="nEff">—</b></div>
+        <div class="kpi"><span>렌트프리 할인율</span><b class="num" id="nDisc">—</b></div>
+        <div class="kpi"><span>연간 점유비용</span><b class="num" id="nYear">—</b></div>
+        <div class="kpi"><span>환산보증금</span><b class="num" id="nConv">—</b></div>
+        <div class="kpi"><span>상임법 보호범위</span><b id="nLaw">—</b></div>
+      </div>
+      <div class="chartblock">
+        <div class="blockhead blockhead--tight"><h4>명목 → 실질 → NOC</h4><span class="meta">원 / 평 / 월</span></div>
+        <div id="nocChart" class="chart"></div>
+      </div>
+      <p class="exam"><b>시험 연결</b> 환산보증금 = 보증금 + 월차임 × 100 (상임법 시행령 제2조). 범위 초과여도 대항력·계약갱신요구권·권리금 보호 등 일부 조항은 적용 — 중개사 민사특별법 빈출.</p>
+    </div>
+  </div>
+
+  <!-- 면적 -->
+  <div class="uw" data-panel="area" hidden>
+    <form class="uw__in" id="areaForm" autocomplete="off">
+      <fieldset>
+        <legend>면적</legend>
+        <label class="field"><span>제곱미터 (㎡)</span><input type="number" name="m2" value="1000" step="any"></label>
+        <label class="field"><span>평</span><input type="number" name="py" step="any"></label>
+      </fieldset>
+      <fieldset>
+        <legend>단가</legend>
+        <label class="field"><span>평당가 (만원)</span><input type="number" name="ppy" value="3500" step="any"></label>
+        <label class="field"><span>㎡당가 (만원)</span><input type="number" name="pm2" step="any"></label>
+      </fieldset>
+    </form>
+    <div class="uw__out">
+      <div class="formula">
+        <p class="num">1평 = 400/121 ㎡ ≈ 3.3058 ㎡</p>
+        <p class="num">1㎡ ≈ 0.3025 평</p>
+      </div>
+      <p class="note">공문서·감정평가서·건축물대장은 ㎡가 법정 단위다(계량에 관한 법률). 시장 리포트와 거래 관행은 평을 쓰므로, 보고서에는 두 단위를 병기하고 평당가가 연면적·임대면적·전용면적 중 무엇 기준인지 반드시 밝힌다.</p>
+      <p class="exam"><b>시험 연결</b> 중개대상물 확인·설명서의 면적은 ㎡ 기재 — 중개사 중개실무.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ───────── 04 RENT ROLL ───────── -->
+<section id="rentroll" class="sec">
+  <header class="sec__head">
+    <p class="eyebrow"><span>04</span>Rent Roll Analyzer</p>
+    <h2 class="display">임대차의 시간표를 읽는다.</h2>
+    <p class="lede">엑셀에서 표를 복사해 붙이면 WALE, 점유율, 만기 집중도를 바로 계산한다. 탭·쉼표 구분 모두 지원. 데이터는 브라우저 밖으로 나가지 않는다.</p>
+  </header>
+
+  <div class="rr">
+    <div class="rr__in">
+      <label class="field">
+        <span>렌트롤 — 임차인, 층, 전용면적(평), 월임대료(만원), 만기일(YYYY-MM-DD)</span>
+        <textarea id="rrText" rows="11" spellcheck="false"></textarea>
+      </label>
+      <div class="rr__actions">
+        <label class="field field--inline"><span>기준일</span><input type="date" id="rrDate"></label>
+        <button class="btn btn--ghost" id="rrSample" type="button">샘플(가상) 불러오기</button>
+      </div>
+      <p class="hint" id="rrErr"></p>
+    </div>
+    <div class="rr__out">
+      <div class="kpis">
+        <div class="kpi kpi--lead"><span>WALE (임대료 기준)</span><b class="num" id="rWale">—</b></div>
+        <div class="kpi"><span>WALE (면적 기준)</span><b class="num" id="rWaleA">—</b></div>
+        <div class="kpi"><span>점유율</span><b class="num" id="rOcc">—</b></div>
+        <div class="kpi"><span>연 임대수입</span><b class="num" id="rRev">—</b></div>
+        <div class="kpi"><span>상위 3 임차인 비중</span><b class="num" id="rTop">—</b></div>
+        <div class="kpi"><span>24개월 내 만기 비중</span><b class="num" id="r24">—</b></div>
+      </div>
+      <div class="chartblock">
+        <div class="blockhead blockhead--tight"><h4>연도별 만기 프로파일</h4><span class="meta">연 임대료 대비 %</span></div>
+        <div id="rrChart" class="chart"></div>
+      </div>
+      <div class="tablewrap">
+        <table class="tbl" id="rrTable"></table>
+      </div>
+      <p class="coachline"><b>사수 코멘트</b> <span id="rrCoach">—</span></p>
+    </div>
+  </div>
+</section>
+
+<!-- ───────── 05 PROCESS ───────── -->
+<section id="process" class="sec">
+  <header class="sec__head">
+    <p class="eyebrow"><span>05</span>Deal Process</p>
+    <h2 class="display">한 딜의 처음부터 끝까지.</h2>
+    <p class="lede">단계마다 산출물, 신입이 맡는 일, 사수의 조언, 흔한 실수, 그리고 시험 범위를 연결했다.</p>
+  </header>
+
+  <ol class="steps" id="steps" role="tablist" aria-label="딜 단계"></ol>
+  <article class="stage" id="stage" aria-live="polite"></article>
+</section>
+
+<!-- ───────── 06 ROADMAP ───────── -->
+<section id="roadmap" class="sec">
+  <header class="sec__head">
+    <p class="eyebrow"><span>06</span>First 90 Days</p>
+    <h2 class="display">90일 뒤, 혼자 첫 장을 쓴다.</h2>
+    <p class="lede">언어 → 데이터 → 모델 → 판단. 체크한 항목은 이 브라우저에 저장된다.</p>
+  </header>
+  <div class="road">
+    <div class="road__ring">
+      <svg viewBox="0 0 120 120" aria-hidden="true">
+        <circle cx="60" cy="60" r="52" class="ring__bg"/>
+        <circle cx="60" cy="60" r="52" class="ring__fg" id="ringFg"/>
+      </svg>
+      <div class="ring__label"><b class="num" id="ringPct">0%</b><span id="ringCnt">0 / 20</span></div>
+    </div>
+    <div class="road__cols" id="roadCols"></div>
+  </div>
+</section>
+
+<!-- ───────── 07 GLOSSARY ───────── -->
+<section id="gloss" class="sec">
+  <header class="sec__head">
+    <p class="eyebrow"><span>07</span>Glossary · Exam Bridge</p>
+    <h2 class="display">실무 용어를 시험 언어로 번역한다.</h2>
+    <p class="lede">실무의 캡레이트는 감정평가의 환원율이고, 실무의 DSCR은 학개론의 부채감당률이다. 같은 개념을 두 번 외우지 않도록 연결해 두었다.</p>
+  </header>
+  <div class="glossbar">
+    <div class="tabs" id="glossTabs"></div>
+    <div class="glossbar__r">
+      <label class="search"><span class="sr">용어 검색</span><input type="search" id="glossQ" placeholder="용어 · 정의 · 법령"></label>
+      <div class="seg" id="examSeg" role="group" aria-label="시험 필터">
+        <button type="button" data-x="" aria-pressed="true">전체</button>
+        <button type="button" data-x="중개사" aria-pressed="false">공인중개사</button>
+        <button type="button" data-x="감평" aria-pressed="false">감정평가사</button>
+      </div>
+    </div>
+  </div>
+  <p class="meta" id="glossMeta"></p>
+  <dl class="gloss" id="glossList"></dl>
+</section>
+
+<!-- ───────── 08 RESOURCES ───────── -->
+<section id="res" class="sec">
+  <header class="sec__head">
+    <p class="eyebrow"><span>08</span>Resources</p>
+    <h2 class="display">어디서 확인하는지가 실력이다.</h2>
+  </header>
+  <div class="resgrid">
+    <div>
+      <h3 class="subhead">데이터 소스</h3>
+      <div id="srcList" class="src"></div>
+    </div>
+    <div>
+      <h3 class="subhead">엑셀 — 모델링 함수</h3>
+      <dl class="kv" id="xlFns"></dl>
+      <h3 class="subhead">엑셀 — 단축키</h3>
+      <dl class="kv kv--keys" id="xlKeys"></dl>
+      <h3 class="subhead">셀 색 규칙</h3>
+      <ul class="colors" id="xlRules"></ul>
+    </div>
+  </div>
+</section>
+
+<footer class="foot">
+  <p>투자자문 워크벤치 — 신입 온보딩·업무 보조용 내부 도구.</p>
+  <p class="fine">시장 지표는 한국은행 ECOS(연결 시) 또는 사용자 입력값이며, 뉴스는 Google 뉴스 검색 결과를 링크로 제공한다. 계산기·렌트롤 기본값은 가상 예시로, 특정 자산의 가치나 투자 수익을 나타내지 않는다. 법령 요약은 학습용이며 적용 전 국가법령정보센터 원문을 확인한다.</p>
+</footer>
+</main>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="assets/js/data.js"></script>
+<script src="assets/js/app.js"></script>
+</body>
+</html>
