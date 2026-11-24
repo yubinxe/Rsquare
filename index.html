@@ -31,6 +31,7 @@
       <a href="#market">시장</a>
       <a href="#news">딜 뉴스</a>
       <a href="#rsq">알스퀘어 소식</a>
+      <a href="#interview" class="gnb__hl">면접 대비</a>
       <a href="#tools">언더라이팅</a>
       <a href="#rentroll">렌트롤</a>
       <a href="#process">딜 프로세스</a>
@@ -217,10 +218,91 @@
   </div>
 </section>
 
-<!-- ───────── 04 TOOLS ───────── -->
+<!-- ───────── 04 INTERVIEW ───────── -->
+<section id="interview" class="sec">
+  <header class="sec__head iv__head">
+    <div>
+      <p class="eyebrow"><b>04</b>Interview Prep</p>
+      <h2 class="display">12월 1일,<br>투자자문 면접.</h2>
+      <p class="lede">회사 최신 소식과 실시간 금리를 답변에 바로 꽂아 넣는다. 예상 질문 12개, 답변 뼈대, 타이머 모의면접, D-7 플랜까지.</p>
+    </div>
+    <div class="dday" aria-live="polite"><span class="dday__l">면접까지</span><b class="dday__n num" id="ddayN">D-?</b><span class="dday__d num" id="ddayD">2026.12.01 (화)</span></div>
+  </header>
+
+  <div class="iv__top">
+    <div class="facts">
+      <div class="blockhead blockhead--tight"><h3>면접용 팩트 카드</h3><span class="meta">출처·날짜 함께 말할 것</span></div>
+      <div class="facts__grid">
+        <div class="fact"><span class="fact__k">시장 숫자</span><div id="factMarket" class="fact__v">—</div></div>
+        <div class="fact"><span class="fact__k">알스퀘어 리서치 발표</span><ul id="factResearch" class="fact__list"><li class="note">피드 불러오는 중…</li></ul></div>
+        <div class="fact fact--wide"><span class="fact__k">최근 30일 회사 주요 소식 (보도 매체 수 순)</span><ul id="factNews" class="fact__list"></ul></div>
+      </div>
+    </div>
+    <aside class="plan">
+      <div class="blockhead blockhead--tight"><h3>D-7 플랜</h3><span class="meta num" id="planCount">0/8</span></div>
+      <ul class="checks" id="planList"></ul>
+    </aside>
+  </div>
+
+  <div class="iv">
+    <nav class="iv__list" aria-label="예상 질문">
+      <ol id="qList"></ol>
+    </nav>
+    <article class="iv__panel" id="qPanel">
+      <div class="iv__q">
+        <p class="meta" id="qMeta">—</p>
+        <h3 id="qText">—</h3>
+        <p class="iv__why"><b>면접관이 보는 것</b><span id="qWhy"></span></p>
+      </div>
+      <div class="iv__skel">
+        <div class="blockhead blockhead--tight"><h4>답변 뼈대 <small class="meta">실시간 수치 반영</small></h4><button class="btn btn--ghost" id="qUse" type="button">내 답변에 붙여넣기</button></div>
+        <ol id="qSkel"></ol>
+      </div>
+      <div class="iv__practice">
+        <div class="timer">
+          <div class="timer__seg" role="group" aria-label="제한 시간">
+            <button type="button" data-t="60" aria-pressed="false">60초</button>
+            <button type="button" data-t="90" aria-pressed="true">90초</button>
+            <button type="button" data-t="120" aria-pressed="false">120초</button>
+          </div>
+          <b class="timer__n num" id="tNum">1:30</b>
+          <button class="btn btn--red" id="tGo" type="button">시작</button>
+          <div class="timer__bar"><i id="tBar"></i></div>
+        </div>
+        <label class="field"><span>내 답변 <em class="meta" id="qLen">0자 · 약 0초</em></span><textarea id="qAns" rows="7" placeholder="결론 → 근거(숫자) → 회사 연결 → 마무리 순서로 적는다."></textarea></label>
+        <ul class="selfcheck" id="qCheck"></ul>
+        <div class="iv__nav">
+          <button class="btn btn--ghost" id="qPrev" type="button">← 이전 질문</button>
+          <button class="btn btn--dark" id="qNext" type="button">다음 질문 →</button>
+          <button class="btn btn--ghost" id="qCopy" type="button">답변 노트 전체 복사</button>
+        </div>
+      </div>
+    </article>
+  </div>
+
+  <div class="iv__bottom">
+    <div class="pitch">
+      <p class="eyebrow eyebrow--plain">AI 역량 · 30초 피치</p>
+      <blockquote>“반복 업무는 자동화하고, 판단에 쓸 시간을 늘립니다. 지금 보여드리는 워크벤치가 그 증거입니다.”</blockquote>
+      <ul>
+        <li><b>자동 수집</b>한국은행 ECOS API로 기준금리·국고채·CD·환율을 매일 갱신</li>
+        <li><b>뉴스 인텔리전스</b>상업용 부동산 뉴스 취합, 우협·입찰·매각 시그널 자동 태깅, 회사 보도 언론사별 묶음</li>
+        <li><b>언더라이팅</b>레버리지 IRR·민감도, PF 임계 분양률, 렌트롤 WALE을 즉시 계산</li>
+        <li><b>검증 원칙</b>모든 숫자는 출처·기준일 표기, AI 결과는 초안으로만 사용</li>
+      </ul>
+      <button class="btn btn--ghost" id="pitchCopy" type="button">피치 문안 복사</button>
+    </div>
+    <div class="reverse">
+      <p class="eyebrow eyebrow--plain">역질문</p>
+      <ol id="revList"></ol>
+    </div>
+  </div>
+</section>
+
+<!-- ───────── 05 TOOLS ───────── -->
 <section id="tools" class="sec">
   <header class="sec__head">
-    <p class="eyebrow"><b>04</b>Underwriting Toolkit</p>
+    <p class="eyebrow"><b>05</b>Underwriting Toolkit</p>
     <h2 class="display">가격은 가정의 결과다.</h2>
     <p class="lede">레버리지 IRR, 직접환원, PF 사업수지, 실질임대료, 면적 환산. 값을 바꾸면 결과와 민감도가 즉시 움직인다. 기본값은 모두 예시다.</p>
   </header>
@@ -419,7 +501,7 @@
 <!-- ───────── 05 RENT ROLL ───────── -->
 <section id="rentroll" class="sec sec--paper">
   <header class="sec__head">
-    <p class="eyebrow"><b>05</b>Rent Roll Analyzer</p>
+    <p class="eyebrow"><b>06</b>Rent Roll Analyzer</p>
     <h2 class="display">임대차의 시간표를 읽는다.</h2>
     <p class="lede">엑셀 표를 붙여넣으면 WALE, 점유율, 만기 집중도를 계산한다. 탭·쉼표 구분 모두 지원. 데이터는 브라우저 밖으로 나가지 않는다.</p>
   </header>
@@ -457,7 +539,7 @@
 <!-- ───────── 06 PROCESS ───────── -->
 <section id="process" class="sec">
   <header class="sec__head">
-    <p class="eyebrow"><b>06</b>Deal Process</p>
+    <p class="eyebrow"><b>07</b>Deal Process</p>
     <h2 class="display">한 딜의 처음부터 끝까지.</h2>
     <p class="lede">단계마다 산출물, 신입이 맡는 일, 사수 코멘트, 흔한 실수, 시험 범위를 연결했다.</p>
   </header>
@@ -468,7 +550,7 @@
 <!-- ───────── 07 ONBOARDING ───────── -->
 <section id="onboard" class="sec sec--paper">
   <header class="sec__head">
-    <p class="eyebrow"><b>07</b>Onboarding</p>
+    <p class="eyebrow"><b>08</b>Onboarding</p>
     <h2 class="display">90일 뒤, 혼자 첫 장을 쓴다.</h2>
     <p class="lede">언어 → 데이터 → 모델 → 판단. 체크한 항목은 이 브라우저에 저장된다.</p>
   </header>
@@ -504,7 +586,7 @@
 <!-- ───────── 08 RESOURCES ───────── -->
 <section id="res" class="sec">
   <header class="sec__head">
-    <p class="eyebrow"><b>08</b>Resources</p>
+    <p class="eyebrow"><b>09</b>Resources</p>
     <h2 class="display">어디서 확인하는지가 실력이다.</h2>
   </header>
   <div class="resgrid">

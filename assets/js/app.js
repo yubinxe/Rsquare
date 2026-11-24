@@ -166,6 +166,7 @@ function renderMacro(data) {
     if (i.dataset.id === 'ktb10') syncKtb();
   }));
   renderHeroKpi(); syncKtb();
+  if (window.__iv) window.__iv();
 }
 
 function syncKtb() {
@@ -378,6 +379,7 @@ async function loadNews() {
     news.ok = false; $('#newsList').innerHTML = ''; newsFallback();
   }
   renderNewsTabs(); renderNews(); renderBriefSignals(); renderTicker(); renderPins(); rsqInit();
+  if (window.__iv) window.__iv();
 }
 
 /* ═════════ SEOUL MAP ═════════ */
@@ -515,6 +517,148 @@ function renderRsq() {
     });
   }
 }
+
+/* ═════════ INTERVIEW ═════════ */
+const IV = RS.interview;
+const ivState = { i: store.get('ivIdx', 0), limit: 90, left: 90, timer: null, run: false };
+const ivAns = store.get('ivAns', {});
+const RESEARCH_RE = /공실률|거래액|임대료|보고서|리서치|지수|상권분석/;
+
+function ivTokens() {
+  const v = macroState.vals, f = (x, d) => isFinite(x) ? nf(x, d) : '(ECOS 연결 시 자동)';
+  const cap = parseFloat(store.get('spCap', '')) || 4.6;
+  const sp = isFinite(v.ktb10) ? cap - v.ktb10 : NaN;
+  const res = news.rsq.filter(n => RESEARCH_RE.test(n.title)).sort((a, b) => (b.date || '').localeCompare(a.date || ''))[0];
+  const top = news.rsq.length ? cluster(news.rsq)[0] : null;
+  return {
+    base: f(v.base, 2), ktb10: f(v.ktb10, 3), cd91: f(v.cd91, 2), usd: f(v.usd, 1),
+    spread: isFinite(sp) ? `${sp >= 0 ? '+' : ''}${sp.toFixed(2)}%p (${Math.round(sp * 100)}bp)` : '(국고채 10년 입력 시 자동)',
+    rsqResearch: res ? `“${res.title}” (${res.source}, ${ymd(res.date)})` : '(뉴스 피드 연결 시 최신 리서치 발표 자동 입력)',
+    rsqLatest: top ? `“${top.items[0].title}” — ${top.items.length}개 매체 보도, ${ymd(top.items[0].date)}` : '(뉴스 피드 연결 시 자동 입력)'
+  };
+}
+const fill = (t, T, html) => t.replace(/\{(\w+)\}/g, (m, k) => T[k] == null ? m : (html ? `<mark>${esc(T[k])}</mark>` : T[k]));
+
+function ivDday() {
+  const o = kstParts(), today = Date.UTC(+o.year, +o.month - 1, +o.day), d = new Date(IV.date + 'T00:00:00Z').getTime();
+  const n = Math.round((d - today) / 864e5);
+  setText('#ddayN', n > 0 ? `D-${n}` : n === 0 ? 'D-DAY' : `D+${-n}`);
+  return n;
+}
+
+function ivFacts() {
+  const v = macroState.vals, T = ivTokens();
+  $('#factMarket').innerHTML = isFinite(v.ktb10)
+    ? `기준금리 <b>${T.base}%</b><br>국고채 10년 <b>${T.ktb10}%</b><br>CD 91일 <b>${T.cd91}%</b><br>원/달러 <b>${T.usd}원</b><br><span class="meta">${macroState.live ? 'ECOS ' + macroState.asOf : '수동 입력값'} · A급 캡 ${(parseFloat(store.get('spCap', '')) || 4.6).toFixed(2)}% 가정 스프레드 ${T.spread}</span>`
+    : '<span class="note">금리 데이터 대기 중</span>';
+  const R = news.rsq.filter(n => RESEARCH_RE.test(n.title)).sort((a, b) => (b.date || '').localeCompare(a.date || '')).slice(0, 4);
+  $('#factResearch').innerHTML = !news.ok ? '<li class="note">피드 미연결</li>' : R.length
+    ? R.map(n => `<li><a href="${esc(n.link)}" target="_blank" rel="noopener">${esc(n.title)}</a><span class="meta">${esc(n.source)} · ${ymd(n.date)}</span></li>`).join('')
+    : '<li class="note">최근 30일 리서치 발표 기사 없음</li>';
+  const C = news.ok ? cluster(news.rsq).slice(0, 4) : [];
+  $('#factNews').innerHTML = C.map(c => `<li><a href="${esc(c.items[0].link)}" target="_blank" rel="noopener">${esc(c.items[0].title)}</a><span class="meta">${c.items.length}개 매체 · ${ymd(c.items[0].date)}</span></li>`).join('') || '<li class="note">피드 미연결</li>';
+}
+
+function ivPlan() {
+  const key = 'ivPlan', done = new Set(store.get(key, [])), ul = $('#planList'), n = ivDday();
+  ul.innerHTML = '';
+  IV.plan.forEach((p, i) => {
+    const dn = IV.plan.length - 1 - i;
+    const li = el('li', { class: dn === n ? 'today' : '' }, `<label><input type="checkbox" ${done.has(i) ? 'checked' : ''}><span class="t">${p[0]}</span><span>${esc(p[1])}</span></label>`);
+    $('input', li).addEventListener('change', e => { e.target.checked ? done.add(i) : done.delete(i); store.set(key, [...done]); setText('#planCount', `${done.size}/${IV.plan.length}`); });
+    ul.appendChild(li);
+  });
+  setText('#planCount', `${done.size}/${IV.plan.length}`);
+}
+
+function ivList() {
+  const ol = $('#qList'); ol.innerHTML = '';
+  IV.questions.forEach((q, i) => {
+    const li = el('li');
+    const b = el('button', { type: 'button', 'aria-current': String(i === ivState.i) },
+      `<span class="n">${String(i + 1).padStart(2, '0')}</span><span><span class="c">${esc(q.c)}</span>${esc(q.q)}</span><i class="ok ${(ivAns[i] || '').length > 50 ? 'on' : ''}"></i>`);
+    b.addEventListener('click', () => ivGo(i));
+    li.appendChild(b); ol.appendChild(li);
+  });
+}
+
+function ivCheck() {
+  const t = $('#qAns').value.trim(), chars = t.replace(/\s/g, '').length, secs = Math.round(chars / 5.5);
+  setText('#qLen', `${chars}자 · 약 ${secs}초`);
+  const first = (t.split(/[.!?。]\s|\n/)[0] || '').trim();
+  const C = [
+    ['결론 먼저', first.length > 0 && first.length <= 70],
+    ['숫자 포함', /\d/.test(t)],
+    ['회사 연결', /알스퀘어|RA|귀사|당사/.test(t)],
+    ['분량 150자+', chars >= 150],
+    [`${ivState.limit}초 이내`, chars > 0 && secs <= ivState.limit]
+  ];
+  $('#qCheck').innerHTML = C.map(c => `<li class="${c[1] ? 'on' : ''}">${c[0]}</li>`).join('');
+}
+
+function ivRender() {
+  const q = IV.questions[ivState.i], T = ivTokens();
+  setText('#qMeta', `Q${String(ivState.i + 1).padStart(2, '0')} · ${q.c}`);
+  setText('#qText', q.q); setText('#qWhy', q.why);
+  $('#qSkel').innerHTML = q.a.map(x => `<li>${fill(esc(x), T, true)}</li>`).join('');
+  $('#qAns').value = ivAns[ivState.i] || '';
+  ivCheck();
+}
+
+function ivGo(i) {
+  ivState.i = (i + IV.questions.length) % IV.questions.length; store.set('ivIdx', ivState.i);
+  ivStop(true); ivList(); ivRender();
+  const p = $('#qPanel'); p.style.animation = 'none'; void p.offsetWidth; p.style.animation = '';
+}
+
+function ivTimerPaint() {
+  const m = Math.floor(Math.abs(ivState.left) / 60), s = Math.abs(ivState.left) % 60;
+  const n = $('#tNum'); n.textContent = `${ivState.left < 0 ? '+' : ''}${m}:${String(s).padStart(2, '0')}`;
+  n.classList.toggle('late', ivState.left <= 10);
+  $('#tBar').style.width = Math.min(100, (1 - ivState.left / ivState.limit) * 100) + '%';
+}
+function ivStop(reset) {
+  clearInterval(ivState.timer); ivState.run = false; setText('#tGo', reset ? '시작' : '재개');
+  if (reset) { ivState.left = ivState.limit; ivTimerPaint(); }
+}
+
+function renderInterview() { ivDday(); ivFacts(); ivList(); ivRender(); }
+window.__iv = () => { ivFacts(); ivRender(); };
+
+(function ivInit() {
+  ivState.left = ivState.limit;
+  const o = kstParts();
+  ivPlan();
+  $('#revList').innerHTML = IV.reverse.map(r => `<li>${esc(r)}</li>`).join('');
+  $$('.timer__seg button').forEach(b => b.addEventListener('click', () => {
+    ivState.limit = +b.dataset.t; $$('.timer__seg button').forEach(x => x.setAttribute('aria-pressed', String(x === b))); ivStop(true); ivCheck();
+  }));
+  $('#tGo').addEventListener('click', () => {
+    if (ivState.run) return ivStop(false);
+    ivState.run = true; setText('#tGo', '정지'); $('#qAns').focus();
+    ivState.timer = setInterval(() => {
+      ivState.left--; ivTimerPaint();
+      if (ivState.left === 0) toast('시간 종료 — 결론부터 다시 말해 본다');
+    }, 1000);
+  });
+  $('#qAns').addEventListener('input', e => {
+    ivAns[ivState.i] = e.target.value; store.set('ivAns', ivAns); ivCheck();
+    const dot = $$('#qList .ok')[ivState.i]; if (dot) dot.classList.toggle('on', e.target.value.length > 50);
+  });
+  $('#qUse').addEventListener('click', () => {
+    const T = ivTokens(), txt = IV.questions[ivState.i].a.map(x => fill(x, T, false)).join('\n');
+    const ta = $('#qAns'); ta.value = ta.value ? ta.value + '\n' + txt : txt; ta.dispatchEvent(new Event('input')); toast('뼈대를 붙여넣었다 — 내 말로 다듬는다');
+  });
+  $('#qPrev').addEventListener('click', () => ivGo(ivState.i - 1));
+  $('#qNext').addEventListener('click', () => ivGo(ivState.i + 1));
+  $('#qCopy').addEventListener('click', () => copyText(`[알스퀘어 투자자문 면접 답변 노트 · ${todayKey()}]\n\n` +
+    IV.questions.map((q, i) => `Q${i + 1}. ${q.q}\n${(ivAns[i] || '(미작성)').trim()}`).join('\n\n')));
+  $('#pitchCopy').addEventListener('click', () => copyText('반복 업무는 자동화하고, 판단에 쓸 시간을 늘립니다. 지금 보여드리는 워크벤치가 그 증거입니다.\n' +
+    $$('.pitch li').map(li => `- ${$('b', li).textContent}: ${li.textContent.replace($('b', li).textContent, '')}`).join('\n')));
+  setText('#ddayD', `2026.12.01 (화) · 오늘 ${o.month}.${o.day}`);
+  ivTimerPaint();
+  renderInterview();
+})();
 
 /* ═════════ UNDERWRITING ═════════ */
 (function uwTabs() {
