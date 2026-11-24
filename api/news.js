@@ -51,7 +51,18 @@ function parse(xml, cat) {
   return out;
 }
 
-async function fetchCat(cat) {
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+// Google 뉴스는 짧은 시간 다건 요청에 429를 준다 → 2건씩 순차 + 429 시 1회 재시도
+async function fetchCat(cat, attempt = 0) {
+  try { return await fetchOnce(cat); }
+  catch (e) {
+    if (attempt < 1 && /429|abort/i.test(String(e && e.message))) { await sleep(900 + Math.random() * 600); return fetchCat(cat, attempt + 1); }
+    throw e;
+  }
+}
+
+async function fetchOnce(cat) {
   const q = encodeURIComponent(QUERIES[cat] + ' ' + (WINDOW[cat] || 'when:7d'));
   const url = `https://news.google.com/rss/search?q=${q}&hl=ko&gl=KR&ceid=KR:ko`;
   const ctrl = new AbortController();
@@ -72,7 +83,10 @@ module.exports = async (req, res) => {
   const want = req.query && req.query.cat;
   const cats = want && QUERIES[want] ? [want] : Object.keys(QUERIES);
 
-  const settled = await Promise.allSettled(cats.map(fetchCat));
+  const settled = [];
+  for (let i = 0; i < cats.length; i += 2) {
+    settled.push(...await Promise.allSettled(cats.slice(i, i + 2).map(c => fetchCat(c))));
+  }
   const seen = new Set();
   const items = [];
   const errors = [];
@@ -91,6 +105,6 @@ module.exports = async (req, res) => {
   items.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
 
   res.setHeader('Content-Type', 'application/json; charset=utf-8');
-  res.setHeader('Cache-Control', 's-maxage=900, stale-while-revalidate=3600');
+  res.setHeader('Cache-Control', errors.length ? 's-maxage=120, stale-while-revalidate=600' : 's-maxage=1800, stale-while-revalidate=7200');
   res.status(200).send(JSON.stringify({ updatedAt: new Date().toISOString(), count: items.length, items, errors }));
 };
